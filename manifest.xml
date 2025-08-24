@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApplicationLink>
+  <id>ssrf-test</id>
+  <name>SSRF-Test-App</name>
+  <type>jira</type>
+</ApplicationLink>
