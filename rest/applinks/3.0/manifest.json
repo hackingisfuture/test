@@ -1,0 +1,7 @@
+{
+  "name": "SSRF-Test-App",
+  "typeId": "generic",
+  "version": "1.0",
+  "publicUrl": "https://applinks-test.yourdomain.com",
+  "iconUrl": "https://applinks-test.yourdomain.com/icon.png"
+}
