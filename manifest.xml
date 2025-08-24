@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ApplicationLink>
+<application-link>
   <id>ssrf-test</id>
   <name>SSRF-Test-App</name>
-  <type>jira</type>
-</ApplicationLink>
+  <type-id>jira</type-id>
+  <icon-url>https://raw.githubusercontent.com/hackingisfuture/test/main/icon.png</icon-url>
+</application-link>
